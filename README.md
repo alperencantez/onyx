@@ -1,4 +1,4 @@
-<h1 style="text-align:center;">⭕️ Onyx</h1>
+<h1 align="center">⭕️ Onyx</h1>
 
 <div style="display:flex; justify-content:center">
 
