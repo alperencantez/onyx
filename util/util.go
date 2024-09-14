@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"os/exec"
 
 	"net/http"
 
@@ -63,22 +64,26 @@ func GetPackageMetadata(packageName, version string, remoteRegistry string) (str
 
 	var packageData map[string]interface{}
 	if err := json.Unmarshal(body, &packageData); err != nil {
-		return "", "", fmt.Errorf("error unmarshalling JSON: %v", err)
+		fmt.Printf("error unmarshalling JSON: %v\n Skipping installation", err)
+		return "", "", nil
 	}
 
 	dist, ok := packageData["dist"].(map[string]interface{})
 	if !ok {
-		return "", "", fmt.Errorf("dist field is missing or not a map")
+		fmt.Printf("dist field is missing or not a map\n Skipping installation")
+		return "", "", nil
 	}
 
 	tarballURL, ok := dist["tarball"].(string)
 	if !ok {
-		return "", "", fmt.Errorf("tarball field is missing or not a string")
+		fmt.Printf("tarball field is missing or not a string\n Skipping installation")
+		return "", "", nil
 	}
 
 	resolvedVersion, ok := packageData["version"].(string)
 	if !ok {
-		return "", "", fmt.Errorf("version field is missing or not a string")
+		fmt.Printf("version field is missing or not a string\n Skipping installation")
+		return "", "", nil
 	}
 
 	return tarballURL, resolvedVersion, nil
@@ -209,4 +214,93 @@ func InstallGlobally(packageName, version string, remoteRegistry string) {
 
 func isWindows() bool {
 	return strings.HasPrefix(strings.ToLower(os.Getenv("OS")), "windows")
+}
+
+func RemovePackageFromNodeModules(packageName string) error {
+	packagePath := filepath.Join("node_modules", packageName)
+	if _, err := os.Stat(packagePath); os.IsNotExist(err) {
+		return fmt.Errorf("package %s is not installed in node_modules", packageName)
+	}
+
+	err := os.RemoveAll(packagePath)
+	if err != nil {
+		return fmt.Errorf("failed to remove package from node_modules: %v", err)
+	}
+
+	fmt.Printf("Removed %s from node_modules\n", packageName)
+	return nil
+}
+
+func RemovePackageFromPackageJSON(packageName string) error {
+	if _, err := os.Stat("package.json"); os.IsNotExist(err) {
+		return fmt.Errorf("package.json not found")
+	}
+
+	file, err := os.ReadFile("package.json")
+	if err != nil {
+		return fmt.Errorf("error reading package.json: %v", err)
+	}
+
+	var packageJSON types.PackageJSON
+	err = json.Unmarshal(file, &packageJSON)
+	if err != nil {
+		return fmt.Errorf("error parsing package.json: %v", err)
+	}
+
+	removed := false
+
+	if _, exists := packageJSON.Dependencies[packageName]; exists {
+		delete(packageJSON.Dependencies, packageName)
+		removed = true
+	}
+
+	if _, exists := packageJSON.DevDependencies[packageName]; exists {
+		delete(packageJSON.DevDependencies, packageName)
+		removed = true
+	}
+
+	if !removed {
+		return fmt.Errorf("package %s not found in dependencies or devDependencies", packageName)
+	}
+
+	updatedJSON, err := json.MarshalIndent(packageJSON, "", "  ")
+	if err != nil {
+		return fmt.Errorf("error marshalling updated package.json: %v", err)
+	}
+
+	err = os.WriteFile("package.json", updatedJSON, 0644)
+	if err != nil {
+		return fmt.Errorf("error writing updated package.json: %v", err)
+	}
+
+	fmt.Printf("Removed %s from package.json\n", packageName)
+	return nil
+}
+
+func ReadPackageJSON() (*types.PackageJSON, error) {
+	file, err := os.ReadFile("package.json")
+	if err != nil {
+		return nil, fmt.Errorf("error reading package.json: %v", err)
+	}
+
+	var packageJSON types.PackageJSON
+	err = json.Unmarshal(file, &packageJSON)
+	if err != nil {
+		return nil, fmt.Errorf("error parsing package.json: %v", err)
+	}
+
+	return &packageJSON, nil
+}
+
+func RunCustomScript(script string) error {
+	cmd := exec.Command("sh", "-c", script)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+
+	err := cmd.Run()
+	if err != nil {
+		return fmt.Errorf("error running script: %v", err)
+	}
+
+	return nil
 }

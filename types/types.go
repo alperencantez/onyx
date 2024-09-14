@@ -2,6 +2,7 @@ package types
 
 type PackageJSON struct {
 	Name            string            `json:"name"`
+	Private         bool              `json:"private,omitempty"`
 	Version         string            `json:"version"`
 	Description     string            `json:"description"`
 	Main            string            `json:"main"`

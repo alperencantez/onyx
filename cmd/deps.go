@@ -49,6 +49,8 @@ func runDeps(cmd *cobra.Command, args []string) {
 			versionNumber = "latest"
 		} else if strings.HasPrefix(version, "~") {
 			versionNumber = version[1:]
+		} else {
+			versionNumber = version
 		}
 
 		tarballURL, resolvedVersion, err := util.GetPackageMetadata(name, versionNumber, remoteRegistry)
@@ -75,6 +77,8 @@ func runDeps(cmd *cobra.Command, args []string) {
 			versionNumber = "latest"
 		} else if strings.HasPrefix(version, "~") {
 			versionNumber = version[1:]
+		} else {
+			versionNumber = version
 		}
 
 		tarballURL, resolvedVersion, err := util.GetPackageMetadata(name, versionNumber, remoteRegistry)
