@@ -49,23 +49,40 @@ func WritePackageJSON(pkg types.PackageJSON) error {
 }
 
 func GetPackageMetadata(packageName, version string, remoteRegistry string) (string, string, error) {
-	resp, err := http.Get(fmt.Sprintf("%s%s/%s", remoteRegistry, packageName, version))
+	url := fmt.Sprintf("%s%s/%s", remoteRegistry, packageName, version)
+	resp, err := http.Get(url)
 	if err != nil {
 		return "", "", err
 	}
 	defer resp.Body.Close()
 
-	var packageData map[string]interface{}
-	err = json.NewDecoder(resp.Body).Decode(&packageData)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return "", "", err
 	}
 
-	dist := packageData["dist"].(map[string]interface{})
-	tarballURL := dist["tarball"].(string)
-	resolvedVersion := packageData["version"].(string)
+	var packageData map[string]interface{}
+	if err := json.Unmarshal(body, &packageData); err != nil {
+		return "", "", fmt.Errorf("error unmarshalling JSON: %v", err)
+	}
+
+	dist, ok := packageData["dist"].(map[string]interface{})
+	if !ok {
+		return "", "", fmt.Errorf("dist field is missing or not a map")
+	}
+
+	tarballURL, ok := dist["tarball"].(string)
+	if !ok {
+		return "", "", fmt.Errorf("tarball field is missing or not a string")
+	}
+
+	resolvedVersion, ok := packageData["version"].(string)
+	if !ok {
+		return "", "", fmt.Errorf("version field is missing or not a string")
+	}
 
 	return tarballURL, resolvedVersion, nil
+
 }
 
 func DownloadAndExtract(url, packageName string, path string) error {

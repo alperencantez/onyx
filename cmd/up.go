@@ -25,11 +25,6 @@ func runUp(cmd *cobra.Command, args []string) {
 		Name:    util.GetDefaultPackageName(),
 		Main:    "index.js",
 		License: "ISC",
-		Scripts: struct {
-			Test string `json:"test"`
-		}{
-			Test: "echo \"Error: no test specified\" && exit 1",
-		},
 	}
 
 	if !createWithDefaultParameters {
@@ -39,7 +34,6 @@ func runUp(cmd *cobra.Command, args []string) {
 		pkg.Version = util.Prompt(reader, "version: ", pkg.Version)
 		pkg.Description = util.Prompt(reader, "description: ", "")
 		pkg.Main = util.Prompt(reader, "entry point: ", pkg.Main)
-		pkg.Scripts.Test = util.Prompt(reader, "test command: ", pkg.Scripts.Test)
 		pkg.Author = util.Prompt(reader, "author: ", "")
 		pkg.License = util.Prompt(reader, "license: ", pkg.License)
 	}
