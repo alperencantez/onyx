@@ -12,6 +12,7 @@ import (
 
 	"net/http"
 
+	"onyx/symlink"
 	"onyx/types"
 
 	"os"
@@ -50,7 +51,7 @@ func WritePackageJSON(pkg types.PackageJSON) error {
 }
 
 func GetPackageMetadata(packageName, version string, remoteRegistry string) (string, string, error) {
-	url := fmt.Sprintf("%s%s/%s", remoteRegistry, packageName, version)
+	url := fmt.Sprintf("%s/%s/%s", remoteRegistry, packageName, version)
 	resp, err := http.Get(url)
 	if err != nil {
 		return "", "", err
@@ -66,6 +67,21 @@ func GetPackageMetadata(packageName, version string, remoteRegistry string) (str
 	if err := json.Unmarshal(body, &packageData); err != nil {
 		fmt.Printf("error unmarshalling JSON: %v\n Skipping installation", err)
 		return "", "", nil
+	}
+
+	binPath, ok := packageData["bin"].(map[string]interface{})
+	if ok {
+		err := os.MkdirAll("./node_modules/.bin", 0755)
+		if err != nil {
+			fmt.Println("Couldn't create .bin directory skipping")
+		}
+
+		for k, v := range binPath {
+			pwd, _ := os.Getwd()
+
+			actualBinaryPath := fmt.Sprintf(pwd+"/node_modules/%v/%v", k, v)
+			symlink.Create(actualBinaryPath, pwd+"/node_modules/.bin/"+k)
+		}
 	}
 
 	dist, ok := packageData["dist"].(map[string]interface{})

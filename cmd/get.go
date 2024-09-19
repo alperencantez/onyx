@@ -9,7 +9,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-const remoteRegistry = "https://registry.npmjs.org/"
+const remoteRegistry = "https://registry.npmjs.org"
 
 var getCmd = &cobra.Command{
 	Use:   "get [package] [version]",
