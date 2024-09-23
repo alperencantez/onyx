@@ -5,6 +5,7 @@ import (
 	"log"
 	"onyx/util"
 	"os"
+	"strings"
 
 	"github.com/spf13/cobra"
 )
@@ -15,7 +16,9 @@ var getCmd = &cobra.Command{
 	Use:   "get [package] [version]",
 	Short: "Manually download and install a single npm package",
 	Args:  cobra.MaximumNArgs(2),
-	Run:   runGet,
+	Run: func(cmd *cobra.Command, args []string) {
+		runGet(rootCmd, args)
+	},
 }
 
 func runGet(cmd *cobra.Command, args []string) {
@@ -30,6 +33,7 @@ func runGet(cmd *cobra.Command, args []string) {
 		version = args[1]
 	}
 
+	version = strings.TrimPrefix(version, "^")
 	isDev, _ := cmd.Flags().GetBool("dev")
 	isGlobal, _ := cmd.Flags().GetBool("global")
 	if isGlobal {
@@ -38,7 +42,7 @@ func runGet(cmd *cobra.Command, args []string) {
 	}
 
 	fmt.Printf("📦 Installing %s@%s...\n", packageName, version)
-	tarballURL, resolvedVersion, err := util.GetPackageMetadata(packageName, version, remoteRegistry)
+	tarballURL, resolvedVersion, deps, err := util.GetPackageMetadata(packageName, version, remoteRegistry)
 	if err != nil {
 		log.Fatalf("Error fetching metadata for %s: %v", packageName, err)
 	}
@@ -51,6 +55,11 @@ func runGet(cmd *cobra.Command, args []string) {
 	err = util.UpdatePackageJSON(packageName, resolvedVersion, isDev)
 	if err != nil {
 		log.Fatalf("Error updating package.json: %v", err)
+	}
+
+	for pkg, v := range deps {
+		dependencyArgs := []string{pkg, fmt.Sprintf("%v", v)}
+		runGet(cmd, dependencyArgs)
 	}
 
 	fmt.Printf("%s@%s installed successfully.\n", packageName, resolvedVersion)

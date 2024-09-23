@@ -50,23 +50,28 @@ func WritePackageJSON(pkg types.PackageJSON) error {
 	return encoder.Encode(pkg)
 }
 
-func GetPackageMetadata(packageName, version string, remoteRegistry string) (string, string, error) {
+func GetPackageMetadata(packageName, version string, remoteRegistry string) (string, string, map[string]interface{}, error) {
 	url := fmt.Sprintf("%s/%s/%s", remoteRegistry, packageName, version)
 	resp, err := http.Get(url)
 	if err != nil {
-		return "", "", err
+		return "", "", nil, err
 	}
 	defer resp.Body.Close()
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return "", "", err
+		return "", "", nil, err
 	}
 
 	var packageData map[string]interface{}
 	if err := json.Unmarshal(body, &packageData); err != nil {
 		fmt.Printf("error unmarshalling JSON: %v\n Skipping installation", err)
-		return "", "", nil
+		return "", "", nil, nil
+	}
+
+	deps, ok := packageData["dependencies"].(map[string]interface{})
+	if !ok {
+		deps = nil
 	}
 
 	binPath, ok := packageData["bin"].(map[string]interface{})
@@ -87,22 +92,22 @@ func GetPackageMetadata(packageName, version string, remoteRegistry string) (str
 	dist, ok := packageData["dist"].(map[string]interface{})
 	if !ok {
 		fmt.Printf("dist field is missing or not a map\n Skipping installation")
-		return "", "", nil
+		return "", "", deps, nil
 	}
 
 	tarballURL, ok := dist["tarball"].(string)
 	if !ok {
 		fmt.Printf("tarball field is missing or not a string\n Skipping installation")
-		return "", "", nil
+		return "", "", deps, nil
 	}
 
 	resolvedVersion, ok := packageData["version"].(string)
 	if !ok {
 		fmt.Printf("version field is missing or not a string\n Skipping installation")
-		return "", "", nil
+		return "", "", deps, nil
 	}
 
-	return tarballURL, resolvedVersion, nil
+	return tarballURL, resolvedVersion, deps, nil
 
 }
 
@@ -214,7 +219,7 @@ func InstallGlobally(packageName, version string, remoteRegistry string) {
 	}
 
 	fmt.Printf("Installing %s@%s globally...\n", packageName, version)
-	tarballURL, resolvedVersion, err := GetPackageMetadata(packageName, version, remoteRegistry)
+	tarballURL, resolvedVersion, _, err := GetPackageMetadata(packageName, version, remoteRegistry)
 	if err != nil {
 		log.Fatalf("Error fetching metadata for %s: %v", packageName, err)
 	}

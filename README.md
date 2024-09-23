@@ -105,7 +105,7 @@ This will execute the `build` script defined in your `package.json`.
 To install a package globally:
 
 ```bash
-sudo onyx install lodash -g
+sudo onyx get lodash -g
 ```
 
 This command installs `lodash` globally in your system.

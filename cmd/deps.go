@@ -53,7 +53,7 @@ func runDeps(cmd *cobra.Command, args []string) {
 			versionNumber = version
 		}
 
-		tarballURL, resolvedVersion, err := util.GetPackageMetadata(name, versionNumber, remoteRegistry)
+		tarballURL, resolvedVersion, _, err := util.GetPackageMetadata(name, versionNumber, remoteRegistry)
 		if err != nil {
 			log.Fatalf("Error fetching metadata for %s: %v", name, err)
 		}
@@ -81,7 +81,7 @@ func runDeps(cmd *cobra.Command, args []string) {
 			versionNumber = version
 		}
 
-		tarballURL, resolvedVersion, err := util.GetPackageMetadata(name, versionNumber, remoteRegistry)
+		tarballURL, resolvedVersion, _, err := util.GetPackageMetadata(name, versionNumber, remoteRegistry)
 		if err != nil {
 			log.Fatalf("Error fetching metadata for %s: %v", name, err)
 		}
