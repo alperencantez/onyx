@@ -1,6 +1,6 @@
 {
   "name": "@cantez/onyx",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "author": "Alperen Cantez",
   "homepage": "https://github.com/alperencantez/onyx",
   "description": "A blazingly-fast package manager for JavaScript.",
@@ -14,7 +14,7 @@
   ],
   "goBinary": {
     "name": "onyx",
-    "path": ".",
+    "path": "./bin",
     "url": "https//github.com/alperencantez/onyx/releases"
   },
   "scripts": {
