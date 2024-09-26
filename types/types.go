@@ -12,3 +12,9 @@ type PackageJSON struct {
 	Dependencies    map[string]string `json:"dependencies,omitempty"`
 	DevDependencies map[string]string `json:"devDependencies,omitempty"`
 }
+
+type LockfileEntry struct {
+	Version      string                 `yaml:"version"`
+	Resolved     string                 `yaml:"resolved"`
+	Dependencies map[string]interface{} `yaml:"dependencies,omitempty"`
+}

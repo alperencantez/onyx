@@ -4,3 +4,4 @@ onyx
 package.json
 package-lock.json
 yarn.lock
+.onyxlock.yaml

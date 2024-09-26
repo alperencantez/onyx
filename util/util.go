@@ -18,6 +18,8 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+
+	"gopkg.in/yaml.v3"
 )
 
 func Prompt(reader *bufio.Reader, question, defaultValue string) string {
@@ -48,6 +50,51 @@ func WritePackageJSON(pkg types.PackageJSON) error {
 	encoder := json.NewEncoder(file)
 	encoder.SetIndent("", "  ")
 	return encoder.Encode(pkg)
+}
+
+func CreateFile(path string) error {
+	file, err := os.Create(path)
+	if err != nil {
+		return err
+	}
+
+	defer file.Close()
+	return err
+}
+
+func UpdateLockfile(entry types.LockfileEntry, name string) error {
+	var packages = make(map[string]types.LockfileEntry)
+
+	file, err := os.ReadFile(".onyxlock.yaml")
+	if err != nil {
+		fmt.Printf("Error reading file: %v\n", err)
+		return err
+	}
+
+	err = yaml.Unmarshal(file, &packages)
+	if err != nil {
+		fmt.Printf("Error parsing YAML: %v\n", err)
+		return err
+	}
+
+	packages[name] = types.LockfileEntry{
+		Version:  entry.Version,
+		Resolved: entry.Resolved,
+	}
+
+	newData, err := yaml.Marshal(&packages)
+	if err != nil {
+		fmt.Printf("Error marshalling YAML: %v\n", err)
+		return err
+	}
+
+	err = os.WriteFile(".onyxlock.yaml", newData, os.ModePerm)
+	if err != nil {
+		fmt.Printf("Error writing to file: %v\n", err)
+		return err
+	}
+
+	return nil
 }
 
 func GetPackageMetadata(packageName, version string, remoteRegistry string) (string, string, map[string]interface{}, error) {
@@ -91,19 +138,18 @@ func GetPackageMetadata(packageName, version string, remoteRegistry string) (str
 
 	dist, ok := packageData["dist"].(map[string]interface{})
 	if !ok {
-		fmt.Printf("dist field is missing or not a map\n Skipping installation")
-		return "", "", deps, nil
+		fmt.Printf("dist field is missing or not a map. Skipping installation\n")
 	}
 
 	tarballURL, ok := dist["tarball"].(string)
 	if !ok {
-		fmt.Printf("tarball field is missing or not a string\n Skipping installation")
+		fmt.Printf("tarball field is missing or not a string. Skipping installation\n")
 		return "", "", deps, nil
 	}
 
 	resolvedVersion, ok := packageData["version"].(string)
 	if !ok {
-		fmt.Printf("version field is missing or not a string\n Skipping installation")
+		fmt.Printf("version field is missing or not a string. Skipping installation\n")
 		return "", "", deps, nil
 	}
 
