@@ -3,10 +3,13 @@
 <div style="display:flex; justify-content:center">
 
 [![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/dwyl/esta/issues)
-[![Version](https://badge.fury.io/gh/tterb%2FHyde.svg)](https://badge.fury.io/gh/tterb%2FHyde)
+![Version](https://img.shields.io/npm/v/%40cantez%2Fonyx)
 [![Open Source](https://badges.frapsoft.com/os/v1/open-source.svg?v=103)](https://opensource.org/)
 
 </div>
+
+> [!WARNING]  
+> Onyx is still in its early development stage and not a production-ready type of software. It might behave in some unexpected ways.
 
 Onyx is a Node.js package manager built with Go (yes, ironically) and the Cobra CLI framework. It allows you to manage your Node.js dependencies without relying on traditional package managers like `npm`, `yarn` or even `pnpm`. The tool provides features for installing, removing, and running scripts from `package.json`, with additional support for handling `devDependencies`.
 
@@ -19,6 +22,7 @@ Onyx is a Node.js package manager built with Go (yes, ironically) and the Cobra 
 - **Run Custom Scripts**: Run custom npm scripts defined in the `scripts` section of `package.json`.
 - **Install Global Packages**: Install packages globally with permissions management.
 - **Graceful Error Handling**: Handles missing or incomplete package metadata gracefully and skips problematic packages.
+- **Custom Lockfile**: After a package installation Onyx has a special `.onyxlock.yaml` file in order to track dependency tree in project directory.
 
 ## Prerequisites
 
@@ -27,6 +31,8 @@ Onyx is a Node.js package manager built with Go (yes, ironically) and the Cobra 
 - [Node](https://nodejs.org) (for testing and running Onyx)
 
 ## Installation
+
+### Linux / Darwin
 
 1. Clone the repository:
 
@@ -51,6 +57,18 @@ Onyx is a Node.js package manager built with Go (yes, ironically) and the Cobra 
    ```bash
    sudo mv onyx /usr/local/bin/
    ```
+
+### Linux
+
+Onyx is distributed via `npm`.
+You can run
+
+```bash
+npm i @cantez/onyx -g
+```
+
+> [!NOTE]  
+> Due to a third-party dependency it can only be obtained through `npm`. Do not attempt to get it with a `yarn add`.
 
 Now you can use `onyx` from any directory!
 
