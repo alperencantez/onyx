@@ -1,6 +1,6 @@
 {
   "name": "@cantez/onyx",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "author": "Alperen Cantez",
   "homepage": "https://github.com/alperencantez/onyx",
   "description": "A blazingly-fast package manager for JavaScript.",
