@@ -2,7 +2,7 @@
   "name": "@cantez/onyx",
   "version": "1.0.4",
   "author": "Alperen Cantez",
-  "homepage": "https://github.com/alperencantez/onyx",
+  "homepage": "https://github.com/alperencantez/onyx#readme",
   "description": "A blazingly-fast package manager for JavaScript.",
   "license": "MIT",
   "bugs": {
@@ -15,7 +15,7 @@
   "goBinary": {
     "name": "onyx",
     "path": "./bin",
-    "url": "https//github.com/alperencantez/onyx/releases"
+    "url": "https://github.com/alperencantez/onyx/releases/download/{{version}}/onyx_{{version}}_{{platform}}_{{arch}}.tar.gz"
   },
   "scripts": {
     "postinstall": "go-npm install",
